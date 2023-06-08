@@ -33,7 +33,7 @@ httpを使用してECPの簡易エミュレーションを行う
 
 ##  ローカルセットアップ
 
-src\%ZTools\simpleddp.clsを%SYSネームスペースにロードする
+¥src¥%ZTools¥simpleddp.clsを%SYSネームスペースにロードする
 
 ```
 >zn "%SYS"
