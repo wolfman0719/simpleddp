@@ -7,12 +7,12 @@ ClassMethod OnPage() As %Status
 	set globalnode=%request.Get("globalnode")
 	set command = %request.Get("command")
 	set value = %request.Get("value")
-											if $zv [ "IRIS"  {
-														set $namespace = namespace
-															}
-													else {
+	if $zv [ "IRIS"  {
+	set $namespace = namespace
+	}
+	else {
 	zn namespace
-															}
+	}
 	if command = "get"  {
 	  write @globalnode
     }
