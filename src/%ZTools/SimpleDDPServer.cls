@@ -8,7 +8,7 @@ ClassMethod OnPage() As %Status
 	set command = %request.Get("command")
 	set value = %request.Get("value")
 	if $zv [ "IRIS"  {
-	set $namespace = namespace
+  set $namespace = namespace
 	}
 	else {
 	znspace namespace
@@ -19,6 +19,13 @@ ClassMethod OnPage() As %Status
 	elseif command = "set" {
 	set @globalnode = value
 	}
+	elseif command = "order" {
+  set gloref = $piece(globalnode,",",1,*-1)
+  set node = $piece(globalnode,",",*-1)
+  set node = $order(@gloref@(node))
+  write node
+  }
+																	
 
 	Quit $$$OK
 }
