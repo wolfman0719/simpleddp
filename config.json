@@ -1,0 +1,2 @@
+[{"name":"^test2","address":"localhost","port":"52773","namespace":"source"}]
+[{"name":"^test3","address":"localhost","port":"52773","namespace":"target"}]

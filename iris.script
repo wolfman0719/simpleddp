@@ -1,0 +1,18 @@
+
+zn "%SYS"
+Do ##class(Security.Users).UnExpireUserPasswords("*")
+Do ##class(Config.NLS.Locales).Install("jpuw")
+set status=##Class(Config.Databases).Get("IRISLIB",.Properties)
+set db = ##class(SYS.Database).%OpenId(Properties("Directory"))
+set db.ReadOnly = 0
+set status = db.%Save()
+do $System.OBJ.ImportDir("/intersystems/iris/dasl/core",,"ck",,1)
+do $System.OBJ.Load("/intersystems/iris/dasl/core/dasl.gof")
+
+zn "%SYS"
+set status=##Class(Config.Databases).Get("IRISLIB",.Properties)
+set db = ##class(SYS.Database).%OpenId(Properties("Directory"))
+set db.ReadOnly = 1
+set status = db.%Save()
+
+halt

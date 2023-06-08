@@ -1,0 +1,18 @@
+version: '3.7'
+#
+services:
+  iris:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: dasl
+    restart: always
+    
+    ports: 
+      - 52774:52773
+
+    volumes:
+      - ./:/irisdev/app    
+
+    environment:
+    - TZ=JST-9
