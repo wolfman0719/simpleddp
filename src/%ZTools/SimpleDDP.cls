@@ -7,60 +7,60 @@ ClassMethod httpcommand(pCommand As %String, pUrl As %String, pPort As %Integer 
     
     try {
 
-	  set protocol = $piece(pUrl,":")
-	  set https = $select(protocol="https":1,1:0)
-	  set server = $piece(pUrl,"/",3)
-	  set url = $piece(pUrl,"/",4,*)
-	  set params = $piece(url,"?",2)
-	  if params'="" {
+	    set protocol = $piece(pUrl,":")
+	    set https = $select(protocol="https":1,1:0)
+	    set server = $piece(pUrl,"/",3)
+	    set url = $piece(pUrl,"/",4,*)
+	    set params = $piece(url,"?",2)
+	    if params'="" {
 	    	
-	    for i = 1:1:$length(params,"&") {
-	      set kv= $piece(params,"&",i)
-	      set kv(i,"KEY") = $piece(kv,"=",1)
-	      set kv(i,"VALUE") = $piece(kv,"=",2)
-	      set kv = i
+	      for i = 1:1:$length(params,"&") {
+	        set kv= $piece(params,"&",i)
+	        set kv(i,"KEY") = $piece(kv,"=",1)
+	        set kv(i,"VALUE") = $piece(kv,"=",2)
+	        set kv = i
+	      }
 	    }
-	  }
 		  
-	  set url = $piece(url,"?",1)
+	    set url = $piece(url,"?",1)
 	  	
-	  set httprequest=##class(%Net.HttpRequest).%New()
+	    set httprequest=##class(%Net.HttpRequest).%New()
 	
-	  set httprequest.Server = server
-	  set httprequest.Port = pPort
-	  if https set httprequest.Port = 443
-	  set httprequest.Https = https
-	  set httprequest.SSLConfiguration = "MYSSL"
+	    set httprequest.Server = server
+	    set httprequest.Port = pPort
+	    if https set httprequest.Port = 443
+	    set httprequest.Https = https
+	    set httprequest.SSLConfiguration = "MYSSL"
 	
-	  for i = 1:1:$get(kv) {
-	    do httprequest.SetParam(kv(i,"KEY"),kv(i,"VALUE"))
-	  }	  
-          if pCommand = "get" {
-	    set status = httprequest.Get(##class(%CSP.Page).EscapeURL(url))
-	  }
-	  else {
-	    set status = httprequest.Post(##class(%CSP.Page).EscapeURL(url))
-	  }
+	    for i = 1:1:$get(kv) {
+	      do httprequest.SetParam(kv(i,"KEY"),kv(i,"VALUE"))
+	    }	  
+      if pCommand = "get" {
+	      set status = httprequest.Get(##class(%CSP.Page).EscapeURL(url))
+	    }
+	    else {
+	      set status = httprequest.Post(##class(%CSP.Page).EscapeURL(url))
+	    }
 	  
-	  $$$ThrowOnError(status)
-	  set statuscode = httprequest.HttpResponse.StatusCode
-	  if statuscode > 399 {
-	    $$$ThrowStatus($$$ERROR($$$GeneralError,"http status error "_statuscode))
-	  }
-	  if pCommand = "get" {
-	    set gzip = httprequest.HttpResponse.Data
-	    set length = 360000
-	    set contents = gzip.Read(.length,.status)
-	  }
-	  else {
-            set contents = ""
-	  }
+	    $$$ThrowOnError(status)
+	    set statuscode = httprequest.HttpResponse.StatusCode
+	    if statuscode > 399 {
+	      $$$ThrowStatus($$$ERROR($$$GeneralError,"http status error "_statuscode))
+	    }
+	    if pCommand = "get" {
+	      set gzip = httprequest.HttpResponse.Data
+	      set length = 360000
+	      set contents = gzip.Read(.length,.status)
+	    }
+	    else {
+        set contents = ""
+	    }
     }
     
     Catch e {
-	  set estatus = e.AsStatus
-	  do $system.Status.DisplayError(estatus)
-	  set status = estatus
+	    set estatus = e.AsStatus
+	    do $system.Status.DisplayError(estatus)
+	    set status = estatus
     }
 
     set pStatus = status
@@ -70,9 +70,9 @@ ClassMethod httpcommand(pCommand As %String, pUrl As %String, pPort As %Integer 
 
 ClassMethod Get(pGlobalNode As %String) As %String
 {
-    set status = $$$OK
+  set status = $$$OK
     
-    try {
+  try {
 	    
 	  set serverinfo = ..ResolveServer(pGlobalNode)
 	  
@@ -91,9 +91,9 @@ ClassMethod Get(pGlobalNode As %String) As %String
 	  set value = ..httpcommand("get",url,port,.status)	  
 	  if 'status do $system.Status.DisplayError(status)
 	
-    }
+  }
     
-    Catch e {
+  Catch e {
 
 	  set gloref = $ZReference
 
@@ -101,16 +101,16 @@ ClassMethod Get(pGlobalNode As %String) As %String
 	  	  	
 	  set value = ..httpcommand("get",url,port, .status)
 	  if 'status do $system.Status.DisplayError(status)
-    }
+  }
     
-    quit value
+  quit value
 }
 
 ClassMethod Set(pCommand As %String) As %Status
 {
-    set status = $$$OK
+  set status = $$$OK
     
-    try {
+  try {
 	  
 	  set pCommand = $translate(pCommand," ","")
 	  set global = $piece(pCommand,"=",1)
@@ -132,9 +132,9 @@ ClassMethod Set(pCommand As %String) As %Status
 	  set value = ..httpcommand("post",url,port,.status)	  
 	  if 'status do $system.Status.DisplayError(status)
 	
-    }
+  }
     
-    Catch e {
+  Catch e {
 
 	  set gloref = $ZReference
 
@@ -143,26 +143,26 @@ ClassMethod Set(pCommand As %String) As %Status
 	  set value = ..httpcommand("post",url,port,.status)	  
 	  if 'status do $system.Status.DisplayError(status)
 
-    }
+  }
     
-    quit value
+  quit value
 }
 
 ClassMethod Order(pGlobalNode As %String) As %String
 {
-    set status = $$$OK
+  set status = $$$OK
     
-    try {
+  try {
 	    
 	  set serverinfo = ..ResolveServer(pGlobalNode)
 	  
 	  set glorefcheck = @pGlobalNode
 	  set gloref = $ZReference
 
-          if serverinfo = "" {
-	  set global = $piece(gloref,",",1,*-1)
-	  set node = $piece(gloref,",",*-1)
-	  set node = $order(@global@(node)) quit
+    if serverinfo = "" {
+	    set global = $piece(gloref,",",1,*-1)
+	    set node = $piece(gloref,",",*-1)
+	    set node = $order(@global@(node)) quit
 	  }
 	  
 	  set address = $list(serverinfo,1)
@@ -178,12 +178,12 @@ ClassMethod Order(pGlobalNode As %String) As %String
     
     Catch e {
 
-	  set gloref = $ZReference
+	    set gloref = $ZReference
 
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref
+	    set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref
 	  	  	
-	  set value = ..httpcommand("get",url,port, .status)
-	  if 'status do $system.Status.DisplayError(status)
+	    set value = ..httpcommand("get",url,port, .status)
+	    if 'status do $system.Status.DisplayError(status)
     }
     
     quit node
@@ -191,22 +191,22 @@ ClassMethod Order(pGlobalNode As %String) As %String
 
 ClassMethod ResolveServer(pGlobalNode As %String) As %String
 {
-    set status = $$$OK
+  set status = $$$OK
     
-    try {
+  try {
 	  set globalname = $piece(pGlobalNode,"(",1)
 	  if $zv [ "IRIS" {
 	    set namespace = $namespace
 	  }
 	  else {
-            set namespace = $znspace
+      set namespace = $znspace
 	  }
 	  set serverinfo = $get(^%ZTools.SimpleDDP("GlobalMapping",namespace,globalname))
     }
     
     Catch e {
-	  set estatus = e.AsStatus
-	  do $system.Status.DisplayError(estatus)
+	    set estatus = e.AsStatus
+	    do $system.Status.DisplayError(estatus)
     }
     
     quit serverinfo
@@ -214,17 +214,17 @@ ClassMethod ResolveServer(pGlobalNode As %String) As %String
 
 ClassMethod GlobalMapping() As %Status
 {
-    set status = $$$OK
+  set status = $$$OK
     
-    if $zv [ "IRIS" {
-      set namespace = $namespace
-    }
-    else {
-      set namespace = $znspace
-    }
-    set ^%ZTools.SimpleDDP("GlobalMapping",namespace,"^ddp") = $listbuild("localhost",52773,"USER")
+  if $zv [ "IRIS" {
+    set namespace = $namespace
+  }
+  else {
+    set namespace = $znspace
+  }
+  set ^%ZTools.SimpleDDP("GlobalMapping",namespace,"^ddp") = $listbuild("localhost",52773,"USER")
     
-    quit status
+  quit status
 }
 
 ClassMethod Config(pFile As %String) As %Status [ Language = objectscript ]
@@ -319,7 +319,10 @@ ClassMethod SetupLocal(pDir As %String) As %Status
   set $namespace = "local"
   set file = pDir_delim_"config.json"
   do ..Config(file)
-  
+
+  set file = pDir_delin_"simpleddp.mac"
+  do $system.OBJ.Load(file,"ck")
+
   set $namespace = "%SYS"
 
   set status=##Class(Config.Databases).Get("IRISLIB",.Properties)
