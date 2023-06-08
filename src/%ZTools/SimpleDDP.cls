@@ -1,7 +1,7 @@
 Class %ZTools.SimpleDDP Extends %Base
 {
 
-		ClassMethod httpcommand(pCommand As %String, pUrl As %String, pPort As %Integer = 80, pStatus As %Status) As %String
+ClassMethod httpcommand(pCommand As %String, pUrl As %String, pPort As %Integer = 80, pStatus As %Status) As %String
 {
     set status = $$$OK
     
@@ -86,7 +86,7 @@ ClassMethod Get(pGlobalNode As %String) As %String
 	  
 	  set gloref = $ZReference
 	
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref
+	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=get&namespace="_namespace_"&globalnode="_gloref
 	  	  	
 	  set value = ..httpcommand("get",url,port,.status)	  
 	  if 'status do $system.Status.DisplayError(status)
@@ -97,7 +97,7 @@ ClassMethod Get(pGlobalNode As %String) As %String
 
 	  set gloref = $ZReference
 
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref
+	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=get&namespace="_namespace_"&globalnode="_gloref
 	  	  	
 	  set value = ..httpcommand("get",url,port, .status)
 	  if 'status do $system.Status.DisplayError(status)
@@ -206,7 +206,7 @@ ClassMethod Config(pFile As %String) As %Status [ Language = objectscript ]
 	  set json = [].%FromJSON(line)
 	  set iterator = json.%GetIterator()
 	  while iterator.%GetNext(.index, .globalinfo) {
-	  	 set  ^%ZTools.SimpleDDP("GlobalMapping",namespace,globalinfo.name) = $listbuild(globalinfo.address,globainfo.port,globalinfo.namespace)	  	 
+	    set  ^%ZTools.SimpleDDP("GlobalMapping",namespace,globalinfo.name) = $listbuild(globalinfo.address,globainfo.port,globalinfo.namespace)	  	 
 	  }
 	    	  
 	}
@@ -233,7 +233,7 @@ ClassMethod SetupLocal(pDir As %String) As %Status
   set ssl = ##class(Security.SSLConfigs).%New()
   set ssl.Name = "MYSSL"
   set status = ssl.%Save()
-  
+ 
   set os = $system.Version.GetOS()
   
   if os = "Windows" {
@@ -242,11 +242,44 @@ ClassMethod SetupLocal(pDir As %String) As %Status
   else {
 	set delim = "/"
   }
+
+  set Directory=pDir_delim_"local"
+  set status=##class(%File).CreateDirectoryChain(Directory,.return)
+  If ('status) {
+    Write "Error Creating Directory Chain: "_return
+  }
+  Else {
+    set db=##Class(SYS.Database).%New()
+    set db.Directory=Directory
+    set status=db.%Save()
+    set DBName="local"
+    set status=##class(Config.Configuration).AddDatabase(DBName,Directory)
+    set NSName=DBName
+    set status=##class(Config.Configuration).AddNamespace(NSName,DBName)
+  }
     	  
+  set Directory=pDir_delim_"remote"
+  set status=##class(%File).CreateDirectoryChain(Directory,.return)
+  If ('status) {
+    Write "Error Creating Directory Chain: "_return
+  }
+  Else {
+    set db=##Class(SYS.Database).%New()
+    set db.Directory=Directory
+    set status=db.%Save()
+    set DBName="remote"
+    set status=##class(Config.Configuration).AddDatabase(DBName,Directory)
+    set NSName=DBName
+    set status=##class(Config.Configuration).AddNamespace(NSName,DBName)
+  }
+
   do $System.OBJ.ImportDir(pDir_delim_"src",,"ck",,1)
   
+  set $namespace = "local"
   set file = pDir_delim_"config.json"
   do ..Config(file)
+  
+  set $namespace = "%SYS"
 
   set status=##Class(Config.Databases).Get("IRISLIB",.Properties)
   set db = ##class(SYS.Database).%OpenId(Properties("Directory"))
