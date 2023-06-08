@@ -148,6 +148,47 @@ ClassMethod Set(pCommand As %String) As %Status
     quit value
 }
 
+ClassMethod Order(pGlobalNode As %String) As %String
+{
+    set status = $$$OK
+    
+    try {
+	    
+	  set serverinfo = ..ResolveServer(pGlobalNode)
+	  
+	  set glorefcheck = @pGlobalNode
+	  set gloref = $ZReference
+
+          if serverinfo = "" {
+	  set global = $piece(gloref,",",1,*-1)
+	  set node = $piece(gloref,",",*-1)
+	  set node = $order(@global@(node)) quit
+	  }
+	  
+	  set address = $list(serverinfo,1)
+	  set port = $list(serverinfo,2)
+	  set namespace = $list(serverinfo,3)
+	  	
+	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref
+	  	  	
+	  set node = ..httpcommand("get",url,port,.status)	  
+	  if 'status do $system.Status.DisplayError(status)
+	
+    }
+    
+    Catch e {
+
+	  set gloref = $ZReference
+
+	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref
+	  	  	
+	  set value = ..httpcommand("get",url,port, .status)
+	  if 'status do $system.Status.DisplayError(status)
+    }
+    
+    quit node
+}
+
 ClassMethod ResolveServer(pGlobalNode As %String) As %String
 {
     set status = $$$OK
