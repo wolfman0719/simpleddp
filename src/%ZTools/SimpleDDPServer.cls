@@ -11,16 +11,16 @@ ClassMethod OnPage() As %Status
 	set $namespace = namespace
 	}
 	else {
-	zn namespace
+	znspace namespace
 	}
 	if command = "get"  {
 	  write @globalnode
-    }
-    elseif command = "set" {
-      set @globalnode = value
-    }
+	}
+	elseif command = "set" {
+	set @globalnode = value
+	}
 
-    Quit $$$OK
+	Quit $$$OK
 }
 
 }
