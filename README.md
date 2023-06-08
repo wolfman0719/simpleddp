@@ -14,11 +14,17 @@ httpを使用してECPの簡易エミュレーションを行う
 
 セットアップ後に、テストプログラムを実行
 
-```>zn "source"```
-```>do ^simpleddp
+```
+>zn "source"
+>do ^simpleddp
+```
 
 ターゲットネームスペースにグローバルが設定されているか確認
-```>zn "target"```
+
+```
+>zn "target"
+>zwrite ^target
+```
 
 
 ### 管理ポータル
@@ -29,7 +35,10 @@ httpを使用してECPの簡易エミュレーションを行う
 
 src/%ZTools\simpleddp.clsを%SYSネームスペースにロードする
 
-```>set file = "C:\git\simpleddp\src\%ZTools\SimpleDDP.cls"```
-```>do $System.OBJ.Load(file,"ck",,1)```
-```>set dir = "c:\git\simpleddp"```
-```>write ##class(%ZTools.SimpleDDP).SetupLocal(dir)```
+```
+>zn "%SYS"
+>set file = "C:\git\simpleddp\src\%ZTools\SimpleDDP.cls"
+>do $System.OBJ.Load(file,"ck",,1)
+>set dir = "c:\git\simpleddp"
+>write ##class(%ZTools.SimpleDDP).SetupLocal(dir)
+```
