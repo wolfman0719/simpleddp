@@ -1,7 +1,7 @@
 Class %ZTools.SimpleDDP Extends %Base
 {
 
-ClassMethod httpget(pUrl As %String, pPort As %Integer = 80, pStatus As %Status) As %String
+		ClassMethod httpcommand(pCommand As %String, pUrl As %String, pPort As %Integer = 80, pStatus As %Status) As %String
 {
     set status = $$$OK
     
@@ -34,13 +34,27 @@ ClassMethod httpget(pUrl As %String, pPort As %Integer = 80, pStatus As %Status)
 	
 	  for i = 1:1:$get(kv) {
 	    do httprequest.SetParam(kv(i,"KEY"),kv(i,"VALUE"))
+	  }	  
+          if pCommand = "get" {
+	    set status = httprequest.Get(##class(%CSP.Page).EscapeURL(url))
 	  }
-	
-	  set status = httprequest.Get(##class(%CSP.Page).EscapeURL(url))
+	  else {
+	    set status = httprequest.Post(##class(%CSP.Page).EscapeURL(url))
+	  }
+	  
+	  $$$ThrowOnError(status)
 	  set statuscode = httprequest.HttpResponse.StatusCode
-	  set gzip = httprequest.HttpResponse.Data
-	  set length = 360000
-	  set contents = gzip.Read(.length,.status)
+	  if statuscode > 399 {
+	    $$$ThrowStatus($$$ERROR($$$GeneralError,"http status error "_statuscode))
+	  }
+	  if pCommand = "get" {
+	    set gzip = httprequest.HttpResponse.Data
+	    set length = 360000
+	    set contents = gzip.Read(.length,.status)
+	  }
+	  else {
+            set contents = ""
+	  }
     }
     
     Catch e {
@@ -74,7 +88,8 @@ ClassMethod Get(pGlobalNode As %String) As %String
 	
 	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref
 	  	  	
-	  set value = ..httpget(url,port)	  
+	  set value = ..httpcommand("get",url,port,.status)	  
+	  if 'status do $system.Status.DisplayError(status)
 	
     }
     
@@ -84,10 +99,8 @@ ClassMethod Get(pGlobalNode As %String) As %String
 
 	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref
 	  	  	
-	  set value = ..httpget(url,port)	  
-
-	  //set estatus = e.AsStatus
-	  //do $system.Status.DisplayError(estatus)
+	  set value = ..httpcommand("get",url,port, .status)
+	  if 'status do $system.Status.DisplayError(status)
     }
     
     quit value
@@ -116,7 +129,8 @@ ClassMethod Set(pCommand As %String) As %Status
 	
 	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref_"&value="_value
 	  	  	
-	  set value = ..httpget(url,port)	  
+	  set value = ..httpcommand("post",url,port,.status)	  
+	  if 'status do $system.Status.DisplayError(status)
 	
     }
     
@@ -126,10 +140,9 @@ ClassMethod Set(pCommand As %String) As %Status
 
 	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref_"&value="_value
 	  	  	
-	  set value = ..httpget(url,port)	  
+	  set value = ..httpcommand("post",url,port,.status)	  
+	  if 'status do $system.Status.DisplayError(status)
 
-	  //set estatus = e.AsStatus
-	  //do $system.Status.DisplayError(estatus)
     }
     
     quit value
@@ -141,7 +154,13 @@ ClassMethod ResolveServer(pGlobalNode As %String) As %String
     
     try {
 	  set globalname = $piece(pGlobalNode,"(",1)
-	  set serverinfo = $get(^%ZTools.SimpleDDP("GlobalMapping",globalname))
+	  if $zv [ "IRIS" {
+	    set namespace = $namespace
+	  }
+	  else {
+            set namespace = $znspace
+	  }
+	  set serverinfo = $get(^%ZTools.SimpleDDP("GlobalMapping",namespace,globalname))
     }
     
     Catch e {
@@ -156,7 +175,13 @@ ClassMethod GlobalMapping() As %Status
 {
     set status = $$$OK
     
-    set ^%ZTools.SimpleDDP("GlobalMapping","^ddp") = $listbuild("localhost",52773,"USER")
+    if $zv [ "IRIS" {
+      set namespace = $namespace
+    }
+    else {
+      set namespace = $znspace
+    }
+    set ^%ZTools.SimpleDDP("GlobalMapping",namespace,"^ddp") = $listbuild("localhost",52773,"USER")
     
     quit status
 }
@@ -165,6 +190,12 @@ ClassMethod Config(pFile As %String) As %Status [ Language = objectscript ]
 {
   set status = $$$OK
   try {
+    if $zv [ "IRIS" {
+      set namespace = $namespace
+    }
+    else {
+      set namespace = $znspace
+    }
     set inputstream = ##class(%Stream.FileCharacter).%New()
     set inputstream.TranslateTable = "UTF8"
     set status = inputstream.LinkToFile(pFile) 
@@ -175,7 +206,7 @@ ClassMethod Config(pFile As %String) As %Status [ Language = objectscript ]
 	  set json = [].%FromJSON(line)
 	  set iterator = json.%GetIterator()
 	  while iterator.%GetNext(.index, .globalinfo) {
-	  	 set  ^%ZTools.SimpleDDP("GlobalMapping",globalinfo.name) = $listbuild(globalinfo.address,globainfo.port,globalinfo.namespace)	  	 
+	  	 set  ^%ZTools.SimpleDDP("GlobalMapping",namespace,globalinfo.name) = $listbuild(globalinfo.address,globainfo.port,globalinfo.namespace)	  	 
 	  }
 	    	  
 	}
