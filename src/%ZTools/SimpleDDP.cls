@@ -247,7 +247,7 @@ ClassMethod Config(pFile As %String) As %Status [ Language = objectscript ]
 	  set json = [].%FromJSON(line)
 	  set iterator = json.%GetIterator()
 	  while iterator.%GetNext(.index, .globalinfo) {
-	    set  ^%ZTools.SimpleDDP("GlobalMapping",namespace,globalinfo.name) = $listbuild(globalinfo.address,globainfo.port,globalinfo.namespace)	  	 
+	    set ^%ZTools.SimpleDDP("GlobalMapping",namespace,globalinfo.name) = $listbuild(globalinfo.address,globalinfo.port,globalinfo.namespace)	  	 
 	  }
 	    	  
 	}
@@ -320,7 +320,7 @@ ClassMethod SetupLocal(pDir As %String) As %Status
   set file = pDir_delim_"config.json"
   do ..Config(file)
 
-  set file = pDir_delin_"simpleddp.mac"
+  set file = pDir_delim_"simpleddp.mac"
   do $system.OBJ.Load(file,"ck")
 
   set $namespace = "%SYS"
