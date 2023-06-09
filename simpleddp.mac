@@ -1,10 +1,18 @@
 ROUTINE simpleddp
 #define SimpleDDPGet(%gnode)	$zddpget("%gnode")
-#define SimpleDDPSet(%gnode,%value)	zddpset "%gnode"=%value
+#define SimpleDDPSet(%gnode,%value)	zddpset "%gnode=%value"
 
 start ;
   kill ^local
   kill ^|"remote"|remote
+
+  set ^local(1) = "local data 1"
+  set ^local(2) = "local data 2"
+  set ^local(3) = "local data 3"
+  set ^local("node",1) = "local data 1"
+  set ^local("node",2) = "local data 2"
+  set ^local("node",3) = "local data 3"
+
   if $zv["IRIS" {
     set $namespace = "remote"
   }
@@ -17,22 +25,44 @@ start ;
   set ^remote("node",1) = "remote data 1"
   set ^remote("node",2) = "remote data 2"
   set ^remote("node",3) = "remote data 3"
+  
   if $zv["IRIS" {
     set $namespace = "local"
   }
   else {
     zn "local"
   }
-  write $$$SimpleDDPGet(^remote(1))
+  
+  write "namespace ",$namespace,!
+  
+  write "^remote(1) = ",$$$SimpleDDPGet(^remote(1)),!
   set node = "node"
-  write $$$SimpleDDPGet(^remote(node,1))  
-  write $$$SimpleDDPGet(^remote(""node"",1))
+  write "^remote(""node"",1) = ",$$$SimpleDDPGet(^remote(node,1)),!
+  write "^remote(""node"",1) = ",$$$SimpleDDPGet(^remote(""node"",1)),!
   set local = "local"
   $$$SimpleDDPSet(^remote(local,1),2)
+
+  write "^local(1) = ",$$$SimpleDDPGet(^local(1)),!
+  set node = "node"
+  write "^local(""node"",1) = ",$$$SimpleDDPGet(^local(node,1)),!
+  write "^local(""node"",1) = ",$$$SimpleDDPGet(^local(""node"",1)),!
+  set local = "local"
+  $$$SimpleDDPSet(^local(local,1),2)
+
   if $zv["IRIS" {
     set $namespace = "remote"
   }
   else {
     zn "remote"
   }
+  
+  write "namespace ",$namespace,!
+  
   zwrite ^remote
+  
+    if $zv["IRIS" {
+    set $namespace = "local"
+  }
+  else {
+    zn "local"
+  }
