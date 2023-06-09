@@ -13,12 +13,8 @@ start ;
   set ^local("node",2) = "local data 2"
   set ^local("node",3) = "local data 3"
 
-  if $zv["IRIS" {
-    set $namespace = "remote"
-  }
-  else {
-    zn "remote"
-  }
+  set $namespace = "remote"
+  
   set ^remote(1) = "remote data 1"
   set ^remote(2) = "remote data 2"
   set ^remote(3) = "remote data 3"
@@ -26,12 +22,7 @@ start ;
   set ^remote("node",2) = "remote data 2"
   set ^remote("node",3) = "remote data 3"
   
-  if $zv["IRIS" {
-    set $namespace = "local"
-  }
-  else {
-    zn "local"
-  }
+  set $namespace = "local"
   
   write "namespace ",$namespace,!
   
@@ -49,20 +40,10 @@ start ;
   set local = "local"
   $$$SimpleDDPSet(^local(local,1),2)
 
-  if $zv["IRIS" {
-    set $namespace = "remote"
-  }
-  else {
-    zn "remote"
-  }
+  set $namespace = "remote"
   
   write "namespace ",$namespace,!
   
   zwrite ^remote
   
-    if $zv["IRIS" {
-    set $namespace = "local"
-  }
-  else {
-    zn "local"
-  }
+  set $namespace = "local"
