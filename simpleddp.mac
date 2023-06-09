@@ -1,3 +1,4 @@
+ROUTINE simpleddp
 #define SimpleDDPGet(%gnode)	$zddpget("%gnode")
 #define SimpleDDPSet(%gnode,%value)	zddpset "%gnode"=%value
 
@@ -27,7 +28,7 @@ start ;
   write $$$SimpleDDPGet(^remote(node,1))  
   write $$$SimpleDDPGet(^remote(""node"",1))
   set local = "local"
-  do $$$SimpleDDPSet(^remote(local,1),2)
+  $$$SimpleDDPSet(^remote(local,1),2)
   if $zv["IRIS" {
     set $namespace = "remote"
   }
