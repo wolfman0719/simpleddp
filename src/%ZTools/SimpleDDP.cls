@@ -86,7 +86,7 @@ ClassMethod Get(pGlobalNode As %String) As %String
 	  
 	  set gloref = $ZReference
 	
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=get&namespace="_namespace_"&globalnode="_gloref
+	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=get&namespace="_namespace_"&globalnode="_gloref_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
 	  set value = ..httpcommand("get",url,port,.status)	  
 	  if 'status do $system.Status.DisplayError(status)
@@ -97,7 +97,7 @@ ClassMethod Get(pGlobalNode As %String) As %String
 
 	  set gloref = $ZReference
 
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=get&namespace="_namespace_"&globalnode="_gloref
+	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=get&namespace="_namespace_"&globalnode="_gloref_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
 	  set value = ..httpcommand("get",url,port, .status)
 	  if 'status do $system.Status.DisplayError(status)
@@ -127,7 +127,7 @@ ClassMethod Set(pCommand As %String) As %Status
 	  
 	  set gloref = $ZReference
 	
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref_"&value="_value
+	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref_"&value="_value_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
 	  set value = ..httpcommand("post",url,port,.status)	  
 	  if 'status do $system.Status.DisplayError(status)
@@ -138,7 +138,7 @@ ClassMethod Set(pCommand As %String) As %Status
 
 	  set gloref = $ZReference
 
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref_"&value="_value
+	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref_"&value="_value_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
 	  set value = ..httpcommand("post",url,port,.status)	  
 	  if 'status do $system.Status.DisplayError(status)
@@ -169,7 +169,7 @@ ClassMethod Order(pGlobalNode As %String) As %String
 	  set port = $list(serverinfo,2)
 	  set namespace = $list(serverinfo,3)
 	  	
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref
+	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
 	  set node = ..httpcommand("get",url,port,.status)	  
 	  if 'status do $system.Status.DisplayError(status)
@@ -180,7 +180,7 @@ ClassMethod Order(pGlobalNode As %String) As %String
 
 	    set gloref = $ZReference
 
-	    set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref
+	    set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
 	    set value = ..httpcommand("get",url,port, .status)
 	    if 'status do $system.Status.DisplayError(status)
