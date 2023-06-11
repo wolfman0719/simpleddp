@@ -1,49 +1,115 @@
 ROUTINE simpleddp
 #define SimpleDDPGet(%gnode)	$zddpget("%gnode")
 #define SimpleDDPSet(%gnode,%value)	zddpset "%gnode=%value"
+#define SimpleDDPOrder(%gnode)	$zddporder("%gnode")
 
 start ;
-  kill ^local
-  kill ^|"remote"|remote
+  try {
+    kill ^local
+    kill ^|"remote"|remote
 
-  set ^local(1) = "local data 1"
-  set ^local(2) = "local data 2"
-  set ^local(3) = "local data 3"
-  set ^local("node",1) = "local data 1"
-  set ^local("node",2) = "local data 2"
-  set ^local("node",3) = "local data 3"
+    set ^local(1) = "ローカルデータ 1"
+    set ^local(2) = "ローカルデータ 2"
+    set ^local(3) = "ローカルデータ 3"
+    set ^local("ローカル",1) = "ローカルデータ 1"
+    set ^local("ローカル",2) = "ローカルデータ 2"
+    set ^local("ローカル",3) = "ローカルデータ 3"
 
-  set $namespace = "remote"
+    set $namespace = "remote"
   
-  set ^remote(1) = "remote data 1"
-  set ^remote(2) = "remote data 2"
-  set ^remote(3) = "remote data 3"
-  set ^remote("node",1) = "remote data 1"
-  set ^remote("node",2) = "remote data 2"
-  set ^remote("node",3) = "remote data 3"
+    set ^remote(1) = "リモートデータ 1"
+    set ^remote(2) = "リモートデータ 2"
+    set ^remote(3) = "リモートデータ 3"
+    set ^remote("リモート",1) = "リモートデータ 1"
+    set ^remote("リモート",2) = "リモートデータ 2"
+    set ^remote("リモート",3) = "リモートデータ 3"
   
-  set $namespace = "local"
+    set $namespace = "local"
   
-  write "namespace ",$namespace,!
+    write "namespace ",$namespace,!
   
-  write "^remote(1) = ",$$$SimpleDDPGet(^remote(1)),!
-  set node = "node"
-  write "^remote(""node"",1) = ",$$$SimpleDDPGet(^remote(node,1)),!
-  write "^remote(""node"",1) = ",$$$SimpleDDPGet(^remote(""node"",1)),!
-  set local = "local"
-  $$$SimpleDDPSet(^remote(local,1),2)
+    write "^remote(1) = ",$$$SimpleDDPGet(^remote(1)),!
+    set node = "リモート"
+    write "^remote(""リモート"",1) = ",$$$SimpleDDPGet(^remote(node,1)),!
+    write "^remote(""リモート"",1) = ",$$$SimpleDDPGet(^remote(""リモート"",1)),!
+    set local = "ローカル"
+    set data = "データ"
+    $$$SimpleDDPSet(^remote(local,1),data)
+    $$$SimpleDDPSet(^remote(local,2),""データ"")
+ 
+    $$$SimpleDDPSet(^local(local,1),^remote(local,1))
 
-  write "^local(1) = ",$$$SimpleDDPGet(^local(1)),!
-  set node = "node"
-  write "^local(""node"",1) = ",$$$SimpleDDPGet(^local(node,1)),!
-  write "^local(""node"",1) = ",$$$SimpleDDPGet(^local(""node"",1)),!
-  set local = "local"
-  $$$SimpleDDPSet(^local(local,1),2)
+    $$$SimpleDDPSet(^remote(local,4),^remote(local,1))
 
-  set $namespace = "remote"
+    write "^local(1) = ",$$$SimpleDDPGet(^local(1)),!
+    set node = "ローカル"
+    write "^local(""ローカル"",1) = ",$$$SimpleDDPGet(^local(node,1)),!
+    write "^local(""ローカル"",1) = ",$$$SimpleDDPGet(^local(""node"",1)),!
+
+    set $namespace = "remote"
   
-  write "namespace ",$namespace,!
+    write "namespace ",$namespace,!
   
-  zwrite ^remote
+    zwrite ^remote
   
-  set $namespace = "local"
+    set $namespace = "local"
+  
+    set global = "^remote(1)"
+    set result = $zddpget(global)
+    write global_" = "_result,!
+    // ^remote(4) not exists
+    set global = "^remote(4)"
+    set result = $zddpget(global)
+    write global_" = "_result,!
+    
+    /// $order test local
+    set node = ""
+    for {
+	  set node = $order(^local(node))
+	  if node = "" quit
+	  write "^local("_node_") = ",$get(^local(node)),!
+	  set node2 = ""
+	  for {
+	    set node2 = $order(^local(node,node2))
+	    if node2 = "" quit
+	    write "^local("_node_","_node2_") = ",$get(^local(node,node2)),!
+	  }
+    }
+
+    /// $zddporder test remote
+    set s1 = ""
+    for {
+	  set s1 = $$$SimpleDDPOrder(^remote(s1))
+	  if node = "" quit
+	  write "^remote("_s1_") = ",$$$SimpleDDPGet(^remote(s1)),!
+	  set s2 = ""
+	  for {
+	    set s2 = $$$SimpleDDPOrder(^remote(s1,s2))
+	    if s2 = "" quit
+	    write "^remote("_s1_","_s2_") = ",$$$SimpleDDPGet(^remote(s1,s2)),!
+	  }
+    }
+
+    /// $zddporder test local
+    set s1 = ""
+    for {
+	  set s1 = $$$SimpleDDPOrder(^local(s1))
+	  if node = "" quit
+	  write "^local("_s1_") = ",$$$SimpleDDPGet(^local(s1)),!
+	  set s2 = ""
+	  for {
+	    set s2 = $$$SimpleDDPOrder(^local(s1,s2))
+	    if s2 = "" quit
+	    write "^local("_s1_","_s2_") = ",$$$SimpleDDPGet(^local(s1,s2)),!
+	  }
+    }
+
+    set global = "^remote(2"
+    // ^remote(2 syntax error
+    set result = $zddpget(global)
+    write global_" = "_result,!
+  }
+  catch e {
+    do $system.Status.DisplayError(e.AsStatus())
+  }
+
