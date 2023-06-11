@@ -1,2 +1,2 @@
 [{"name":"^remote","address":"localhost","port":"52773","namespace":"remote"}]
-[{"name":"^remote2","address":"localhost","port":"52773","namespace":"remote"}]
+[{"name":"^remote2","address":"localhost2","port":"52773","namespace":"remote"}]
