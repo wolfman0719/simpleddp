@@ -15,7 +15,7 @@ httpを使用してECPの簡易エミュレーションを行う
 セットアップ後に、テストプログラムを実行
 
 ```
->zn "source"
+>zn "local"
 >do ^simpleddp
 ```
 
