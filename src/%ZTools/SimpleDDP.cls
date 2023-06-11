@@ -1,147 +1,173 @@
-Class %ZTools.SimpleDDP Extends %Base
+Class %ZTools.SimpleDDP Extends %Base [ Not ProcedureBlock ]
 {
+
+// グローバルリファレンス名の参照の際に任意のローカル変数を参照する可能性があるために、ProcedureBlockにしない
 
 ClassMethod httpcommand(pCommand As %String, pUrl As %String, pPort As %Integer = 80, pStatus As %Status) As %String
 {
-    set status = $$$OK
+  new status,protocol,https,server,url,params,i,kv,url,httprequest,gzip,length,contents
+  set status = $$$OK
     
-    try {
+  try {
 
-	    set protocol = $piece(pUrl,":")
-	    set https = $select(protocol="https":1,1:0)
-	    set server = $piece(pUrl,"/",3)
-	    set url = $piece(pUrl,"/",4,*)
-	    set params = $piece(url,"?",2)
-	    if params'="" {
+     set protocol = $piece(pUrl,":")
+	 set https = $select(protocol="https":1,1:0)
+	 set server = $piece(pUrl,"/",3)
+	 set url = $piece(pUrl,"/",4,*)
+	 set params = $piece(url,"?",2)
+	 if params'="" {
 	    	
-	      for i = 1:1:$length(params,"&") {
-	        set kv= $piece(params,"&",i)
-	        set kv(i,"KEY") = $piece(kv,"=",1)
-	        set kv(i,"VALUE") = $piece(kv,"=",2)
-	        set kv = i
-	      }
-	    }
+	 for i = 1:1:$length(params,"&") {
+	   set kv= $piece(params,"&",i)
+	   set kv(i,"KEY") = $piece(kv,"=",1)
+	   set kv(i,"VALUE") = $piece(kv,"=",2)
+	   set kv = i
+	 }
+   }
 		  
-	    set url = $piece(url,"?",1)
+   set url = $piece(url,"?",1)
 	  	
-	    set httprequest=##class(%Net.HttpRequest).%New()
+   set httprequest=##class(%Net.HttpRequest).%New()
 	
-	    set httprequest.Server = server
-	    set httprequest.Port = pPort
-	    if https set httprequest.Port = 443
-	    set httprequest.Https = https
-	    set httprequest.SSLConfiguration = "MYSSL"
+   set httprequest.Server = server
+   set httprequest.Port = pPort
+   if https set httprequest.Port = 443
+   set httprequest.Https = https
+   set httprequest.SSLConfiguration = "MYSSL"
 	
-	    for i = 1:1:$get(kv) {
-	      do httprequest.SetParam(kv(i,"KEY"),kv(i,"VALUE"))
-	    }	  
-      if pCommand = "get" {
-	      set status = httprequest.Get(##class(%CSP.Page).EscapeURL(url))
-	    }
-	    else {
-	      set status = httprequest.Post(##class(%CSP.Page).EscapeURL(url))
-	    }
+   for i = 1:1:$get(kv) {
+     do httprequest.SetParam(kv(i,"KEY"),kv(i,"VALUE"))
+   }	  
+   if pCommand = "get" {
+     set status = httprequest.Get(##class(%CSP.Page).EscapeURL(url))
+   }
+   else {
+	 set status = httprequest.Post(##class(%CSP.Page).EscapeURL(url))
+   }
 	  
-	    $$$ThrowOnError(status)
-	    set statuscode = httprequest.HttpResponse.StatusCode
-	    if statuscode > 399 {
-	      $$$ThrowStatus($$$ERROR($$$GeneralError,"http status error "_statuscode))
-	    }
-	    if pCommand = "get" {
-	      set gzip = httprequest.HttpResponse.Data
-	      set length = 360000
-	      set contents = gzip.Read(.length,.status)
-	    }
-	    else {
-        set contents = ""
-	    }
-    }
+   $$$ThrowOnError(status)
+
+   set statuscode = httprequest.HttpResponse.StatusCode
+   if statuscode > 399 {
+     $$$ThrowStatus($$$ERROR($$$GeneralError,"http status error "_statuscode))
+   }
+   if pCommand = "get" {
+     set gzip = httprequest.HttpResponse.Data
+	 set length = 360000
+	 set contents = gzip.Read(.length,.status)
+   }
+   else {
+     set contents = ""
+   }
+ }
     
-    Catch e {
-	    set estatus = e.AsStatus
-	    do $system.Status.DisplayError(estatus)
-	    set status = estatus
-    }
+ Catch e {
+   set status = e.AsStatus()
+ }
 
     set pStatus = status
     
-    quit contents
+    quit $get(contents)
 }
 
 ClassMethod Get(pGlobalNode As %String) As %String
 {
+  // 戻り値
+  //   正常形　1;Getの結果
+  //   異常値　status値
+  
+  new status,serverinfo,value,address,port,namespace,glorefcheck,gloref,url
   set status = $$$OK
     
   try {
 	    
-	  set serverinfo = ..ResolveServer(pGlobalNode)
+    set serverinfo = ..ResolveServer(pGlobalNode)
 	  
-	  if serverinfo = "" set value = $get(@pGlobalNode) quit
+	if serverinfo = "" set value = status_";"_$get(@pGlobalNode) quit
 	  
-	  set address = $list(serverinfo,1)
-	  set port = $list(serverinfo,2)
-	  set namespace = $list(serverinfo,3)
+	set address = $list(serverinfo,1)
+	set port = $list(serverinfo,2)
+	set namespace = $list(serverinfo,3)
 	  
-	  set glorefcheck = @pGlobalNode
+	set glorefcheck = $get(@pGlobalNode)
 	  
-	  set gloref = $ZReference
-	
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=get&namespace="_namespace_"&globalnode="_gloref_"&IRISUsername=_system&IRISPassword=SYS"
+	set gloref = $ZReference
+		
+	// セキュリティの観点では、ユーザー名、パスワードをそのまま使用しているのはよくないプラクティス
+	set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=get&namespace="_namespace_"&globalnode="_gloref_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
-	  set value = ..httpcommand("get",url,port,.status)	  
-	  if 'status do $system.Status.DisplayError(status)
+	set value = ..httpcommand("get",url,port,.status)
+	if 'status set value = status
 	
-  }
+   }
     
-  Catch e {
+   Catch e {
+	  
+     set value = e.AsStatus()
 
-	  set gloref = $ZReference
-
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=get&namespace="_namespace_"&globalnode="_gloref_"&IRISUsername=_system&IRISPassword=SYS"
-	  	  	
-	  set value = ..httpcommand("get",url,port, .status)
-	  if 'status do $system.Status.DisplayError(status)
-  }
+   }
     
-  quit value
+   quit value
 }
 
 ClassMethod Set(pCommand As %String) As %Status
 {
+  // 戻り値
+  //   正常形　1
+  //   異常値　status値
+  
+  new status,global,serverinfo,serverinfo2,value,address,port,namespace,glorefcheck,gloref,url
+
   set status = $$$OK
     
   try {
 	  
-	  set pCommand = $translate(pCommand," ","")
-	  set global = $piece(pCommand,"=",1)
-	  set value = $piece(pCommand,"=",2)  
-	  set serverinfo = ..ResolveServer(global)
+    set pCommand = $translate(pCommand," ","")
+	set global = $piece(pCommand,"=",1)
+	set value = $piece(pCommand,"=",2)  
+	if $extract(value,1) '= "^" {
+	  if value ["""" {
+      // リテラル値の場合は、ダブルクオートを取り除いて、値だけ取り出す
+	    set value = $translate(value,"""","")
+	  }
+	  else {
+		// 変数の場合は、その値を取得
+		set value = $get(@value)
+	  }
+	}
+	set serverinfo = ..ResolveServer(global)
+	set serverinfo2 = ..ResolveServer(value)
 	  
-	  if serverinfo = "" set @global = value quit
-	  
-	  set address = $list(serverinfo,1)
-	  set port = $list(serverinfo,2)
-	  set namespace = $list(serverinfo,3)
-	  
-	  set glorefcheck = @global
-	  
-	  set gloref = $ZReference
+	if serverinfo2 '= "" set value = $zddpget(value)
 	
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref_"&value="_value_"&IRISUsername=_system&IRISPassword=SYS"
+	if serverinfo = "" set @global = value quit
+	  
+	set address = $list(serverinfo,1)
+	set port = $list(serverinfo,2)
+	set namespace = $list(serverinfo,3)
+	  
+	set glorefcheck = $get(@global)
+	  
+	set gloref = $ZReference
+	
+	// セキュリティの観点では、ユーザー名、パスワードをそのまま使用しているのはよくないプラクティス
+	  
+	set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref_"&value="_value_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
-	  set value = ..httpcommand("post",url,port,.status)	  
-	  if 'status do $system.Status.DisplayError(status)
+	set value = ..httpcommand("get",url,port,.status)	  
+
+	if 'status {
+	  set value = status
+	}
+	else {
+	  set value = $$$OK
+	}
 	
   }
     
   Catch e {
 
-	  set gloref = $ZReference
-
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref_"&value="_value_"&IRISUsername=_system&IRISPassword=SYS"
-	  	  	
-	  set value = ..httpcommand("post",url,port,.status)	  
-	  if 'status do $system.Status.DisplayError(status)
+    set value = e.AsStatus()
 
   }
     
@@ -150,189 +176,88 @@ ClassMethod Set(pCommand As %String) As %Status
 
 ClassMethod Order(pGlobalNode As %String) As %String
 {
+  // 戻り値
+  //   正常形　1;$Orderの結果
+  //   異常値　status値
+　// 予約語
+  //   zZnode
+  //   ZZnodename
+  //   この２つの変数はバッテングすると動作に支障がでるので、このメソッドを呼び出すロジック上では利用できない
+  
+  new status,globalref,global,serverinfo,value,address,port,namespace,glorefcheck,gloref,url,zZnode,zZnodename
+
   set status = $$$OK
     
   try {
 	    
-	  set serverinfo = ..ResolveServer(pGlobalNode)
-	  
-	  set glorefcheck = @pGlobalNode
-	  set gloref = $ZReference
-
+    set serverinfo = ..ResolveServer(pGlobalNode)
+	
+	if pGlobalNode ["," {
+	  // 2ノード以上
+	  set globalref = $piece(pGlobalNode,",",1,*-1)_")"
+	  set zZnodename = $translate($piece(pGlobalNode,",",*),")","")
+	}
+	else {
+	  // 1ノードの場合
+	  set globalref = $piece(pGlobalNode,"(",1)
+	  set zZnodename = $piece($piece(pGlobalNode,"(",2),")",1)
+	}
+	
+	if zZnodename > 0 {
+	  set zZnode = $get(@zZnodename)
+	}
+	elseif zZnodename '[ """" {
+	  set zZnode = $get(@zZnodename)
+	} 
+	else {
+	  set zZnode = zZnodename
+	}
+	
+	set glorefcheck = $get(@globalref)
+	set gloref = $ZReference
+        
     if serverinfo = "" {
-	    set global = $piece(gloref,",",1,*-1)
-	    set node = $piece(gloref,",",*-1)
-	    set node = $order(@global@(node)) quit
-	  }
+	  set zZnode = status_";"_$order(@gloref@(zZnode)) quit
+	}
 	  
-	  set address = $list(serverinfo,1)
-	  set port = $list(serverinfo,2)
-	  set namespace = $list(serverinfo,3)
+	set address = $list(serverinfo,1)
+	set port = $list(serverinfo,2)
+	set namespace = $list(serverinfo,3)
 	  	
-	  set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref_"&IRISUsername=_system&IRISPassword=SYS"
+	// セキュリティの観点では、ユーザー名、パスワードをそのまま使用しているのはよくないプラクティス
+	set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref_"&node="_zZnode_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
-	  set node = ..httpcommand("get",url,port,.status)	  
-	  if 'status do $system.Status.DisplayError(status)
+	set zZnode = ..httpcommand("get",url,port,.status)	  
+	if 'status set zZnode = status
 	
     }
     
     Catch e {
-
-	    set gloref = $ZReference
-
-	    set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref_"&IRISUsername=_system&IRISPassword=SYS"
-	  	  	
-	    set value = ..httpcommand("get",url,port, .status)
-	    if 'status do $system.Status.DisplayError(status)
+	    
+	  set zZnode = e.AsStatus()
     }
     
-    quit node
+    quit zZnode
 }
 
 ClassMethod ResolveServer(pGlobalNode As %String) As %String
 {
+  new status,globalname,namespace,serverinfo,estatus
   set status = $$$OK
     
   try {
-	  set globalname = $piece(pGlobalNode,"(",1)
-	  if $zv [ "IRIS" {
-	    set namespace = $namespace
-	  }
-	  else {
-      set namespace = $znspace
-	  }
-	  set serverinfo = $get(^%ZTools.SimpleDDP("GlobalMapping",namespace,globalname))
-    }
+    set globalname = $piece(pGlobalNode,"(",1)
+	set namespace = $namespace
+	set serverinfo = $get(^%ZTools.SimpleDDP("GlobalMapping",namespace,globalname))
+  }
     
-    Catch e {
-	    set estatus = e.AsStatus
-	    do $system.Status.DisplayError(estatus)
-    }
+  Catch e {
+    set estatus = e.AsStatus
+	//do $system.Status.DisplayError(estatus)
+  }
     
-    quit serverinfo
-}
-
-ClassMethod GlobalMapping() As %Status
-{
-  set status = $$$OK
-    
-  if $zv [ "IRIS" {
-    set namespace = $namespace
-  }
-  else {
-    set namespace = $znspace
-  }
-  set ^%ZTools.SimpleDDP("GlobalMapping",namespace,"^ddp") = $listbuild("localhost",52773,"USER")
-    
-  quit status
-}
-
-ClassMethod Config(pFile As %String) As %Status [ Language = objectscript ]
-{
-  set status = $$$OK
-  try {
-    if $zv [ "IRIS" {
-      set namespace = $namespace
-    }
-    else {
-      set namespace = $znspace
-    }
-    set inputstream = ##class(%Stream.FileCharacter).%New()
-    set inputstream.TranslateTable = "UTF8"
-    set status = inputstream.LinkToFile(pFile) 
-  
-  	while 'inputstream.AtEnd {
-	  	  
-	  set line = $translate(inputstream.ReadLine(),$char(13),"")
-	  set json = [].%FromJSON(line)
-	  set iterator = json.%GetIterator()
-	  while iterator.%GetNext(.index, .globalinfo) {
-	    set ^%ZTools.SimpleDDP("GlobalMapping",namespace,globalinfo.name) = $listbuild(globalinfo.address,globalinfo.port,globalinfo.namespace)	  	 
-	  }
-	    	  
-	}
-  }
-  catch e {
-	do e.OutputToDevice()
-	zwrite   
-  }
- 
-  QUIT status
-}
-
-ClassMethod SetupLocal(pDir As %String) As %Status
-{
-  set status = $$$OK
-    
-  set namespace = $namespace
-  set $namespace = "%SYS"
-
-  set status=##Class(Config.Databases).Get("IRISLIB",.Properties)
-  set db = ##class(SYS.Database).%OpenId(Properties("Directory"))
-  set db.ReadOnly = 0
-  set status = db.%Save()
-  set ssl = ##class(Security.SSLConfigs).%New()
-  set ssl.Name = "MYSSL"
-  set status = ssl.%Save()
- 
-  set os = $system.Version.GetOS()
-  
-  if os = "Windows" {
-    set delim = "\"
-  }
-  else {
-	set delim = "/"
-  }
-
-  set Directory=pDir_delim_"local"
-  set status=##class(%File).CreateDirectoryChain(Directory,.return)
-  If ('status) {
-    Write "Error Creating Directory Chain: "_return
-  }
-  Else {
-    set db=##Class(SYS.Database).%New()
-    set db.Directory=Directory
-    set status=db.%Save()
-    set DBName="local"
-    set status=##class(Config.Configuration).AddDatabase(DBName,Directory)
-    set NSName=DBName
-    set status=##class(Config.Configuration).AddNamespace(NSName,DBName)
-  }
-    	  
-  set Directory=pDir_delim_"remote"
-  set status=##class(%File).CreateDirectoryChain(Directory,.return)
-  If ('status) {
-    Write "Error Creating Directory Chain: "_return
-  }
-  Else {
-    set db=##Class(SYS.Database).%New()
-    set db.Directory=Directory
-    set status=db.%Save()
-    set DBName="remote"
-    set status=##class(Config.Configuration).AddDatabase(DBName,Directory)
-    set NSName=DBName
-    set status=##class(Config.Configuration).AddNamespace(NSName,DBName)
-  }
-
-  do $System.OBJ.ImportDir(pDir_delim_"src",,"ck",,1)
-  
-  set $namespace = "local"
-  set file = pDir_delim_"config.json"
-  do ..Config(file)
-
-  set file = pDir_delim_"simpleddp.mac"
-  do $system.OBJ.Load(file,"ck")
-
-  set $namespace = "%SYS"
-
-  set status=##Class(Config.Databases).Get("IRISLIB",.Properties)
-  set db = ##class(SYS.Database).%OpenId(Properties("Directory"))
-  set db.ReadOnly = 1
-  set status = db.%Save()
-
-  set $namespace = namespace
-
-  quit status
+  quit serverinfo
 }
 
 }
+

@@ -1,24 +1,39 @@
 Class %ZTools.SimpleDDPServer Extends %CSP.Page
 {
 
+Parameter CONVERTINPUTSTREAM = 1;
+
 ClassMethod OnPage() As %Status
 {
-	set namespace = %request.Get("namespace")
+　// 戻り値
+  //   正常　1;コマンドの戻り値
+  //   異常　status値
+
+  set status = $$$OK
+	
+  try {
+
+    set namespace = %request.Get("namespace")
 	set globalnode=%request.Get("globalnode")
+	set zZznode = %request.Get("node")
 	set command = %request.Get("command")
 	set value = %request.Get("value")
 	set $namespace = namespace
 	if command = "get"  {
-	  write @globalnode
+	  write status_";"_$get(@globalnode)
 	}
 	elseif command = "set" {
-	set @globalnode = value
+	  set @globalnode = value
+	  write status
 	}
 	elseif command = "order" {
-  	set gloref = $piece(globalnode,",",1,*-1)
-  	set node = $piece(globalnode,",",*-1)
-  	set node = $order(@gloref@(node))
-  	write node
+  	  set zZznode = $order(@globalnode@(zZznode))
+  	  write status_";"_zZznode
+    }
+  }
+  catch e {
+    set status = e.AsStatus()
+	write status
   }
 																	
 
@@ -26,3 +41,4 @@ ClassMethod OnPage() As %Status
 }
 
 }
+
