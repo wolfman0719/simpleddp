@@ -22,8 +22,8 @@ httpを使用してECPの簡易エミュレーションを行う
 ターゲットネームスペースにグローバルが設定されているか確認
 
 ```
->zn "target"
->zwrite ^target
+>zn "remote"
+>zwrite ^remote
 ```
 
 
@@ -37,8 +37,8 @@ httpを使用してECPの簡易エミュレーションを行う
 
 ```
 >zn "%SYS"
->set file = "C:\git\simpleddp\src\%ZTools\SimpleDDP.cls"
+>set file = "C:\git\simpleddp\src\%ZTools\SimpleDDPSetup.cls"
 >do $System.OBJ.Load(file,"ck",,1)
 >set dir = "c:\git\simpleddp"
->write ##class(%ZTools.SimpleDDP).SetupLocal(dir)
+>write ##class(%ZTools.SimpleDDPSetup).SetupLocal(dir)
 ```
