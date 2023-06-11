@@ -6,13 +6,53 @@ set status=##Class(Config.Databases).Get("IRISLIB",.Properties)
 set db = ##class(SYS.Database).%OpenId(Properties("Directory"))
 set db.ReadOnly = 0
 set status = db.%Save()
-do $System.OBJ.ImportDir("/intersystems/iris/dasl/core",,"ck",,1)
-do $System.OBJ.Load("/intersystems/iris/dasl/core/dasl.gof")
+set ssl = ##class(Security.SSLConfigs).%New()
+set ssl.Name = "MYSSL"
+set status = ssl.%Save()
 
-zn "%SYS"
+set Directory="/intersystems/iris/simpleddp/local"
+set status=##class(%File).CreateDirectoryChain(Directory,.return)
+If ('status) {
+  Write "Error Creating Directory Chain: "_return
+}
+Else {
+  set db=##Class(SYS.Database).%New()
+  set db.Directory=Directory
+  set status=db.%Save()
+  set DBName="local"
+  set status=##class(Config.Configuration).AddDatabase(DBName,Directory)
+  set NSName=DBName
+  set status=##class(Config.Configuration).AddNamespace(NSName,DBName)
+}
+    	  
+set Directory="/intersystems/iris/simpleddp/remote"
+set status=##class(%File).CreateDirectoryChain(Directory,.return)
+If ('status) {
+  Write "Error Creating Directory Chain: "_return
+}
+Else {
+  set db=##Class(SYS.Database).%New()
+  set db.Directory=Directory
+  set status=db.%Save()
+  set DBName="remote"
+  set status=##class(Config.Configuration).AddDatabase(DBName,Directory)
+  set NSName=DBName
+  set status=##class(Config.Configuration).AddNamespace(NSName,DBName)
+}
+
+do $System.OBJ.ImportDir("/intersystems/iris/simpleddp/src",,"ck",,1)
+  
+set $namespace = "local"
+set file = "/intersystems/iris/simpleddp/config.json"
+do ..Config(file)
+
+set file = "/intersystems/iris/simpleddp/simpleddp.mac"
+do $system.OBJ.Load(file,"ck")
+
+set $namespace = "%SYS"
+
 set status=##Class(Config.Databases).Get("IRISLIB",.Properties)
 set db = ##class(SYS.Database).%OpenId(Properties("Directory"))
 set db.ReadOnly = 1
 set status = db.%Save()
-
 halt
