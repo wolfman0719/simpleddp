@@ -1,7 +1,7 @@
 Class %ZTools.SimpleDDP Extends %Base [ Not ProcedureBlock ]
 {
 
-// グローバルリファレンス名の参照の際に任意のローカル変数を参照する可能性があるために、ProcedureBlockにしない
+// 以下のメソッド(Get,Set,Order)でグローバルリファレンス名の参照の際に任意のローカル変数を参照する可能性があるために、ProcedureBlockにしない
 
 ClassMethod httpcommand(pCommand As %String, pUrl As %String, pPort As %Integer = 80, pStatus As %Status) As %String
 {
@@ -81,6 +81,10 @@ ClassMethod Get(pGlobalNode As %String) As %String
     
   try {
 	    
+	  if $extract(pGlobalNode,1) = "@" {
+		  set pGlobalNode = @($extract(pGlobalNode,2,*))
+	  }
+	  
     set serverinfo = ..ResolveServer(pGlobalNode)
 	  
 	if serverinfo = "" set value = status_";"_$get(@pGlobalNode) quit
@@ -93,7 +97,8 @@ ClassMethod Get(pGlobalNode As %String) As %String
 	  
 	set gloref = $ZReference
 		
-	// セキュリティの観点では、ユーザー名、パスワードをそのまま使用しているのはよくないプラクティス
+	// セキュリティの観点では、ユーザー名、パスワードをそのまま使用しているのはよくないプラクティスだが、とりあえずデフォルトのユーザー名、パスワードを使用
+	
 	set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=get&namespace="_namespace_"&globalnode="_gloref_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
 	set value = ..httpcommand("get",url,port,.status)
@@ -123,9 +128,18 @@ ClassMethod Set(pCommand As %String) As %Status
   try {
 	  
     set pCommand = $translate(pCommand," ","")
-	set global = $piece(pCommand,"=",1)
-	set value = $piece(pCommand,"=",2)  
-	if $extract(value,1) '= "^" {
+	 set global = $piece(pCommand,"=",1)
+	 set value = $piece(pCommand,"=",2)
+
+	  if $extract(global,1) = "@" {
+		  set global = @($extract(global,2,*))
+	  }
+  
+	  if $extract(value,1) = "@" {
+		  set value = @($extract(value,2,*))
+	  }
+
+	 if $extract(value,1) '= "^" {
 	  if value ["""" {
       // リテラル値の場合は、ダブルクオートを取り除いて、値だけ取り出す
 	    set value = $translate(value,"""","")
@@ -138,10 +152,13 @@ ClassMethod Set(pCommand As %String) As %Status
 	set serverinfo = ..ResolveServer(global)
 	set serverinfo2 = ..ResolveServer(value)
 	  
-	if serverinfo2 '= "" set value = $zddpget(value)
-	
-	if serverinfo = "" set @global = value quit
-	  
+	if serverinfo2 '= "" {
+	  set value = $zddpget(value)
+	}
+	elseif serverinfo = "" {
+	  set @global = value quit
+	}
+		  
 	set address = $list(serverinfo,1)
 	set port = $list(serverinfo,2)
 	set namespace = $list(serverinfo,3)
@@ -150,7 +167,7 @@ ClassMethod Set(pCommand As %String) As %Status
 	  
 	set gloref = $ZReference
 	
-	// セキュリティの観点では、ユーザー名、パスワードをそのまま使用しているのはよくないプラクティス
+	// セキュリティの観点では、ユーザー名、パスワードをそのまま使用しているのはよくないプラクティスプラクティスだが、とりあえずデフォルトのユーザー名、パスワードを使用
 	  
 	set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=set&namespace="_namespace_"&globalnode="_gloref_"&value="_value_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
@@ -190,15 +207,19 @@ ClassMethod Order(pGlobalNode As %String) As %String
     
   try {
 	    
+	  if $extract(pGlobalNode,1) = "@" {
+		  set pGlobalNode = @($extract(pGlobalNode,2,*))
+	  }
+
     set serverinfo = ..ResolveServer(pGlobalNode)
 	
 	if pGlobalNode ["," {
-	  // 2ノード以上
+	  // 2添え字以上
 	  set globalref = $piece(pGlobalNode,",",1,*-1)_")"
 	  set zZnodename = $translate($piece(pGlobalNode,",",*),")","")
 	}
 	else {
-	  // 1ノードの場合
+	  // 1添え字の場合
 	  set globalref = $piece(pGlobalNode,"(",1)
 	  set zZnodename = $piece($piece(pGlobalNode,"(",2),")",1)
 	}
@@ -224,7 +245,8 @@ ClassMethod Order(pGlobalNode As %String) As %String
 	set port = $list(serverinfo,2)
 	set namespace = $list(serverinfo,3)
 	  	
-	// セキュリティの観点では、ユーザー名、パスワードをそのまま使用しているのはよくないプラクティス
+	// セキュリティの観点では、ユーザー名、パスワードをそのまま使用しているのはよくないプラクティスだが、とりあえずデフォルトのユーザー名、パスワードを使用
+	
 	set url = "http://"_address_"/csp/sys/%ZTools.SimpleDDPServer.cls"_"?command=order&namespace="_namespace_"&globalnode="_gloref_"&node="_zZnode_"&IRISUsername=_system&IRISPassword=SYS"
 	  	  	
 	set zZnode = ..httpcommand("get",url,port,.status)	  
@@ -260,4 +282,3 @@ ClassMethod ResolveServer(pGlobalNode As %String) As %String
 }
 
 }
-
