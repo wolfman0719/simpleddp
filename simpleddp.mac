@@ -29,6 +29,8 @@ start ;
     write "namespace ",$namespace,!
   
     write "^remote(1) = ",$$$SimpleDDPGet(^remote(1)),!
+    set indirect = "^remote(1)"
+    write "^remote(@indirect) = ",$$$SimpleDDPGet(@indirect),!
     set node = "リモート"
     write "^remote(""リモート"",1) = ",$$$SimpleDDPGet(^remote(node,1)),!
     write "^remote(""リモート"",1) = ",$$$SimpleDDPGet(^remote(""リモート"",1)),!
@@ -40,6 +42,11 @@ start ;
     $$$SimpleDDPSet(^local(local,1),^remote(local,1))
 
     $$$SimpleDDPSet(^remote(local,4),^remote(local,1))
+    set indirect2 = "^remote(local,2)"
+    $$$SimpleDDPSet(@indirect2,""リモートローカルデータ2"")
+
+    set indirect2 = "^local(local,2)"
+    $$$SimpleDDPSet(@indirect2,""ローカルデータ2"")
 
     write "^local(1) = ",$$$SimpleDDPGet(^local(1)),!
     set node = "ローカル"
@@ -112,4 +119,3 @@ start ;
   catch e {
     do $system.Status.DisplayError(e.AsStatus())
   }
-
