@@ -57,6 +57,7 @@ arg - グローバル参照
    - $zddpget("^test(1)")   
    - $zddpget("^test(""aaa"")")
    - $zddpget("^test(aaa)")
+   - $zddpget("@goref"")
 
 ####  $zzddporder(arg)
 
@@ -69,6 +70,7 @@ arg - グローバル参照
    - $zddporder("^test("""")")   
    - $zddporder("^test(""aaa"")")
    - $zddporder("^test(s1,s2)")
+   - $zddporder("@goref"")
 
 ### コマンド
 
@@ -85,12 +87,15 @@ arg - setコマンドの引数形式
 - $zddpset "^test(""test"") = ""test"""
 - $zddpset "^test(test) = test"
 - $zddpset "^test(test) = ^test"
+- $zddpset "@gloref = ^test"
 
 ###  制限事項
 
 本来のコマンド、関数とは異なり、引数は、"(ダブルクオート)で囲む必要がある
 
 マクロを定義することで（simpleddp.macにサンプルあり）この制限はある程度解消できるが、リテラルを指定する際に、ダブルクオートが２個必要になるという制限は残る
+
+添字にグローバル参照を指定した場合にそれがリモートかどうかの判断はしない（ローカルに存在するかどうかしかチェックしない）
 
 
 ##  設定
