@@ -196,7 +196,7 @@ ClassMethod Order(pGlobalNode As %String) As %String
   // 戻り値
   //   正常形　1;$Orderの結果
   //   異常値　status値
-　// 予約語
+  // 予約語
   //   zZnode
   //   ZZnodename
   //   この２つの変数はバッテングすると動作に支障がでるので、このメソッドを呼び出すロジック上では利用できない
