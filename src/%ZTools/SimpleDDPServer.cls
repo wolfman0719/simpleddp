@@ -5,9 +5,9 @@ Parameter CONVERTINPUTSTREAM = 1;
 
 ClassMethod OnPage() As %Status
 {
-			// 戻り値
-			//   正常　1;コマンドの戻り値
-			//   異常　status値
+  // 戻り値
+	//   正常　1;コマンドの戻り値
+  //   異常　status値
 
   set status = $$$OK
 	
