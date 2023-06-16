@@ -10,7 +10,6 @@ ENV ISC_TEMP_DIR=/intersystems/iris/simpleddp
 
 USER ${ISC_PACKAGE_MGRUSER}
 
-COPY dsmdasl_demo-utf8.sav $ISC_TEMP_DIR/
 COPY simpleddp.mac $ISC_TEMP_DIR 
 COPY src $ISC_TEMP_DIR
 COPY src/%ZTools $ISC_TEMP_DIR/%ZTools
