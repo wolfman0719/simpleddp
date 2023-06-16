@@ -40,7 +40,7 @@ Else {
   set status=##class(Config.Configuration).AddNamespace(NSName,DBName)
 }
 
-do $System.OBJ.ImportDir("/intersystems/iris/simpleddp/src",,"ck",,1)
+do $System.OBJ.ImportDir("/intersystems/iris/simpleddp",,"ck",,1)
   
 set $namespace = "local"
 set file = "/intersystems/iris/simpleddp/config.json"
