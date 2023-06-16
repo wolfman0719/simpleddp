@@ -10,7 +10,7 @@ ENV ISC_TEMP_DIR=/intersystems/iris/simpleddp
 
 USER ${ISC_PACKAGE_MGRUSER}
 
-COPY simpleddp.mac $ISC_TEMP_DIR 
+COPY simpleddp.mac $ISC_TEMP_DIR/simpleddp.mac
 COPY src $ISC_TEMP_DIR
 COPY src/%ZTools $ISC_TEMP_DIR/%ZTools
 COPY iris.script /tmp/iris.script
