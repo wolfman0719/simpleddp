@@ -33,6 +33,8 @@ httpを使用してECPの簡易エミュレーションを行う
 
 ##  ローカルセットアップ（WindowsやMacOSにインストールしたIRIS上にセットアップする）
 
+git cloneまたはここからダウンロードしたzipファイルを展開する
+
 ¥src¥%ZTools¥simpleddp.clsを%SYSネームスペースにロードする
 
 ```
