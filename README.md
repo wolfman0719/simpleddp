@@ -3,7 +3,7 @@
 httpを使用してECPの簡易エミュレーションを行う
 
 
-## ビルドプロセス
+## DOckerビルドプロセス
 
 ### Build & Run
 * ```docker-compose up -d --build```
@@ -31,7 +31,7 @@ httpを使用してECPの簡易エミュレーションを行う
 
 [localhost:52773/csp/sys/%25CSP.Portal.Home.zen?IRISUsername=_system&IRISPassword=SYS](http://localhost:52773/csp/sys/%25CSP.Portal.Home.zen?IRISUsername=_system&IRISPassword=SYS)
 
-##  ローカルセットアップ
+##  ローカルセットアップ（WindowsやMacOSにインストールしたIRIS上にセットアップする）
 
 ¥src¥%ZTools¥simpleddp.clsを%SYSネームスペースにロードする
 
