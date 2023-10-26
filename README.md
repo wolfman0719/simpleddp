@@ -3,7 +3,7 @@
 httpを使用してECPの簡易エミュレーションを行う
 
 
-## DOckerビルドプロセス
+## Dockerビルドプロセス
 
 ### Build & Run
 * ```docker-compose up -d --build```
