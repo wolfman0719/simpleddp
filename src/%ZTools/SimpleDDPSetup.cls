@@ -9,26 +9,26 @@ ClassMethod Config(pFile As %String) As %Status [ Language = objectscript ]
 	  
     set namespace = $namespace
 
-	kill ^%ZTools.SimpleDDP("GlobalMapping",namespace)  
+    kill ^%ZTools.SimpleDDP("GlobalMapping",namespace)  
 
     set inputstream = ##class(%Stream.FileCharacter).%New()
     set inputstream.TranslateTable = "UTF8"
     set status = inputstream.LinkToFile(pFile) 
   
-  	while 'inputstream.AtEnd {
+    while 'inputstream.AtEnd {
 	  	  
-	  set line = $translate(inputstream.ReadLine(),$char(13),"")
-	  set json = [].%FromJSON(line)
-	  set iterator = json.%GetIterator()
-	  while iterator.%GetNext(.index, .globalinfo) {
-	    set ^%ZTools.SimpleDDP("GlobalMapping",namespace,globalinfo.name) = $listbuild(globalinfo.address,globalinfo.port,globalinfo.namespace)	  	 
-	  }
+      set line = $translate(inputstream.ReadLine(),$char(13),"")
+      set json = [].%FromJSON(line)
+      set iterator = json.%GetIterator()
+      while iterator.%GetNext(.index, .globalinfo) {
+        set ^%ZTools.SimpleDDP("GlobalMapping",namespace,globalinfo.name) = $listbuild(globalinfo.address,globalinfo.port,globalinfo.namespace)	  	 
+      }
 	    	  
-	}
+    }
   }
   catch e {
-	do e.OutputToDevice()
-	zwrite   
+    do e.OutputToDevice()
+    zwrite   
   }
  
   QUIT status
@@ -55,7 +55,7 @@ ClassMethod SetupLocal(pDir As %String) As %Status
     set delim = "\"
   }
   else {
-	set delim = "/"
+    set delim = "/"
   }
 
   set Directory=pDir_delim_"local"
